@@ -14,8 +14,14 @@ app.post("/signup",async(req,res)=>{
         age,
         gender
     })
-    await user.save();
-    res.send("User Added Sucessfull")
+    try{
+        await user.save();
+        res.send("User Added Sucessfull")
+    }catch(err){
+        res.status(400).send("User Not Added" + err.message);
+    }
+
+    
 
 })
 
