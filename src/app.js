@@ -20,9 +20,35 @@ app.post("/signup",async(req,res)=>{
     }catch(err){
         res.status(400).send("User Not Added" + err.message);
     }
-
+})
+//get single user
+app.get("/user",async(req,res)=>{
+    const email= req.body.emailId;
+    try {
+        
+    console.log(email);
+    const user= await User.findOne({emailId:email})
+    if(!user){
+        return res.status(400).send("User Not Found!")
+    }
+     return res.status(200).send(user)
+    } catch (error) {
+        res.status(400).send("Something Went Wrong");
+    }
+})
+//feed api
+app.get("/feed",async(req,res)=>{
+    try {
+        const users = await User.find({});
+        console.log(users);
+        if(!users){
+            return res.status(400).send("Something Went Wrong")
+        }
+         return res.status(200).send(users)
+    } catch (error) {
+        res.status(400).send("Something Went Wrong");
+    }
     
-
 })
 
 
