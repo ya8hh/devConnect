@@ -3,8 +3,10 @@ const express =require('express');
 const app = express();
 const connectDb = require('./config/database')
 const User =require("./models/user.model")
+const {validateSignUpData} =require("./utils/validation")
 app.use(express.json());
 app.post("/signup",async(req,res)=>{
+    
     const {firstName,lastName,emailId,password,age,gender}=req.body;
     const user = new User({
         firstName,
@@ -15,6 +17,7 @@ app.post("/signup",async(req,res)=>{
         gender
     })
     try{
+        validateSignUpData(req);
         await user.save();
         res.send("User Added Sucessfull")
     }catch(err){
