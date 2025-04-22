@@ -40,7 +40,7 @@ app.get("/user",async(req,res)=>{
 app.get("/feed",async(req,res)=>{
     try {
         const users = await User.find({});
-        console.log(users);
+        // console.log(users);
         if(!users){
             return res.status(400).send("Something Went Wrong")
         }
