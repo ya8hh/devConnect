@@ -10,6 +10,8 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 const jwt =require("jsonwebtoken")
+const {userAuth}=require("./middlewares/auth");
+//signup
 app.post("/signup",async(req,res)=>{
     
     const {firstName,lastName,emailId,password}=req.body;
@@ -103,10 +105,10 @@ app.post("/login", async(req,res)=>{
         if(!user){
             throw new Error("Email is not registered")
         }
-         const isPasswordValid = await bcrypt.compare(password,user.password);
+         const isPasswordValid = await user.getValidate(password);
         if(isPasswordValid){
-        const token = await jwt.sign({_id:user._id},process.env.SECRET);
-        // console.log(token)
+        const token = await user.getJWT(); 
+        console.log(token)
 
 
             //cookie send
@@ -122,16 +124,27 @@ app.post("/login", async(req,res)=>{
 
 })
 //profile
-app.get("/profile",async(req,res)=>{
-    const cookie =req.cookies;
-    const {token} = cookie;
-    console.log(token);
-    //validate
-    const decoded = await jwt.verify(token,process.env.SECRET);
-    const { _id }= decoded;
-    console.log("Logged In User is:" +_id);
-    const user = await User.findById(_id).select(["-password","-_id"]);
+app.get("/profile",userAuth,async(req,res)=>{
+    try{
+    //     const cookie =req.cookies;
+    // const {token} = cookie;
+    // if(!token){
+    //     throw new Error("Invalid Crediantials")
+    // }
+    // // console.log(token); 
+    // //validate
+    // const decoded = await jwt.verify(token,process.env.SECRET);
+    // const { _id }= decoded;
+    // // console.log("Logged In User is:" +_id);
+    // const user = await User.findById(_id).select(["-password","-_id"]);
+    const user =req.user;
+    if(!user){
+        throw new Error("lno user")
+    }
     res.send(user)
+    }catch(err){
+        res.status(400).send("User Not Athorizedu " + err.message);
+    }
 
 })
 
