@@ -5,8 +5,11 @@ const app = express();
 const connectDb = require('./config/database')
 const User =require("./models/user.model")
 const {validateSignUpData} =require("./utils/validation")
+const cookieParser = require("cookie-parser");
+app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+const jwt =require("jsonwebtoken")
 app.post("/signup",async(req,res)=>{
     
     const {firstName,lastName,emailId,password}=req.body;
@@ -85,6 +88,7 @@ app.patch("/user/:userId",async (req,res)=>{
         res.status(400).send("Something Went Wrong"+ error.message );
     }
 });
+//login
 app.post("/login", async(req,res)=>{
     // console.log(req.body)
     const {emailId,password} = req.body;
@@ -101,6 +105,12 @@ app.post("/login", async(req,res)=>{
         }
          const isPasswordValid = await bcrypt.compare(password,user.password);
         if(isPasswordValid){
+        const token = await jwt.sign({_id:user._id},process.env.SECRET);
+        // console.log(token)
+
+
+            //cookie send
+            res.cookie("token",token);
             res.send("Login Sucessfully")
         }else{
             throw new Error("Password is not correct");
@@ -111,7 +121,19 @@ app.post("/login", async(req,res)=>{
     }
 
 })
+//profile
+app.get("/profile",async(req,res)=>{
+    const cookie =req.cookies;
+    const {token} = cookie;
+    console.log(token);
+    //validate
+    const decoded = await jwt.verify(token,process.env.SECRET);
+    const { _id }= decoded;
+    console.log("Logged In User is:" +_id);
+    const user = await User.findById(_id).select(["-password","-_id"]);
+    res.send(user)
 
+})
 
 
 
