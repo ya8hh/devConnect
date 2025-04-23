@@ -1,23 +1,27 @@
 require('dotenv').config();
+const bcrypt = require('bcrypt')
 const express =require('express');
 const app = express();
 const connectDb = require('./config/database')
 const User =require("./models/user.model")
 const {validateSignUpData} =require("./utils/validation")
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.post("/signup",async(req,res)=>{
     
-    const {firstName,lastName,emailId,password,age,gender}=req.body;
-    const user = new User({
-        firstName,
-        lastName,
-        emailId,
-        password,
-        age,
-        gender
-    })
+    const {firstName,lastName,emailId,password}=req.body;
+     
     try{
+
         validateSignUpData(req);
+        const emailClean = emailId.trim().toLowerCase();
+        const passwordHash = await bcrypt.hash(password,10)
+        const user = new User({
+            firstName,
+            lastName,
+            emailId :emailClean,
+            password:passwordHash,
+        })
         await user.save();
         res.send("User Added Sucessfull")
     }catch(err){
@@ -30,7 +34,7 @@ app.get("/user",async(req,res)=>{
     try {
         
     console.log(email);
-    const user= await User.findOne({emailId:email})
+    const user= await User.findOne({emailId:email}).select(['-password','-_id']);
     if(!user){
         return res.status(400).send("User Not Found!")
     }
@@ -42,7 +46,7 @@ app.get("/user",async(req,res)=>{
 //feed api
 app.get("/feed",async(req,res)=>{
     try {
-        const users = await User.find({});
+        const users = await User.find({}).select(['-password','-_id']);
         // console.log(users);
         if(!users){
             return res.status(400).send("Something Went Wrong")
@@ -81,7 +85,32 @@ app.patch("/user/:userId",async (req,res)=>{
         res.status(400).send("Something Went Wrong"+ error.message );
     }
 });
+app.post("/login", async(req,res)=>{
+    // console.log(req.body)
+    const {emailId,password} = req.body;
+    // console.log(emailId);
+   
+    try{
+        const emailClean = emailId.trim().toLowerCase();
+        // console.log(emailClean)
+            const user = await User.findOne({emailId:emailClean});
+        
+        // console.log(user)
+        if(!user){
+            throw new Error("Email is not registered")
+        }
+         const isPasswordValid = await bcrypt.compare(password,user.password);
+        if(isPasswordValid){
+            res.send("Login Sucessfully")
+        }else{
+            throw new Error("Password is not correct");
+        }
 
+    }catch(err){
+        res.status(400).send("User Not Login " + err.message);
+    }
+
+})
 
 
 
