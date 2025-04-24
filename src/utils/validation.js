@@ -7,10 +7,17 @@ const validateSignUpData =(req)=>{
         throw new Error(" not valid email");
     }else if(!validator.isStrongPassword(password)){
         throw new Error(" password not strong enough");
-    }
-
-        
+    }     
 }
+const validateEditFields=(req)=>{
+    const allowedField =["firstName","lastName","emailId","age","gender","skills","about","photoUrl"]
+
+   const isEditAllowed = Object.keys(req.body).every(field=>allowedField.includes(field))
+    return isEditAllowed;
+}
+   
 module.exports={
     validateSignUpData,
+ validateEditFields
+
 }

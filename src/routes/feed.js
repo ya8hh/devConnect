@@ -1,7 +1,8 @@
 const express = require('express')
 const feedRouter = express.Router()
 const User =require("../models/user.model")
-feedRouter.get("/feed",async(req,res)=>{
+const { userAuth } = require('../middlewares/auth');
+feedRouter.get("/feed",userAuth,async(req,res)=>{
     try {
         const users = await User.find({}).select(['-password','-_id']);
         // console.log(users);

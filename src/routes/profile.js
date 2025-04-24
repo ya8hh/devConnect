@@ -1,21 +1,11 @@
 const express = require('express')
 const profileRouter =express.Router();
 const { userAuth } = require('../middlewares/auth');
+const {validateEditFields} =require("../utils/validation")
 
 //profile
-profileRouter.get("/profile",userAuth,async(req,res)=>{
+profileRouter.get("/profile/view",userAuth,async(req,res)=>{
     try{
-    //     const cookie =req.cookies;
-    // const {token} = cookie;
-    // if(!token){
-    //     throw new Error("Invalid Crediantials")
-    // }
-    // // console.log(token); 
-    // //validate
-    // const decoded = await jwt.verify(token,process.env.SECRET);
-    // const { _id }= decoded;
-    // // console.log("Logged In User is:" +_id);
-    // const user = await User.findById(_id).select(["-password","-_id"]);
     const user =req.user;
     if(!user){
         throw new Error("lno user")
@@ -26,7 +16,21 @@ profileRouter.get("/profile",userAuth,async(req,res)=>{
     }
 
 })
-
+// patch -update profile
+profileRouter.patch("/profile/edit",userAuth,async(req,res)=>{
+    try {
+    if ( !validateEditFields(req)){
+        throw new Error("edit not allowed");
+    }
+    const LoggedInUser =req.user;
+    Object.keys(req.body).forEach((key)=>LoggedInUser[key]=req.body[key]);
+    console.log(LoggedInUser);
+    await LoggedInUser.save();
+    res.send("Edit Done")
+    } catch (error) {
+        res.send("try again, "+error.message);
+    }
+})
 
 
 module.exports =profileRouter;

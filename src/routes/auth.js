@@ -3,6 +3,7 @@ const authRouter = express.Router();
 const User =require("../models/user.model")
 const bcrypt = require('bcrypt')
 const {validateSignUpData} =require("../utils/validation")
+const { userAuth } = require('../middlewares/auth');
 //signup
 authRouter.post("/signup",async(req,res)=>{
     
@@ -57,6 +58,14 @@ authRouter.post("/login", async(req,res)=>{
         res.status(400).send("User Not Login " + err.message);
     }
 
+})
+//logout
+authRouter.get("/logout",userAuth,(req,res)=>{
+    try {
+        res.clearCookie('token').status(200).send("User Logged Out");
+    } catch (error) {
+        res.send("Something went wrong "+error.message);
+    }
 })
 
 
