@@ -12,10 +12,12 @@ const profileRouter =require("./routes/profile");
 const requestsRouter =require("./routes/requests");
 const authRouter = require('./routes/auth');
 const feedRouter = require('./routes/feed');
+const userRouter = require('./routes/userRoutes');
 app.use("/",authRouter);
 app.use("/",requestsRouter);
 app.use("/",profileRouter);
 app.use("/",feedRouter);
+app.use("/",userRouter);
 
 
 
